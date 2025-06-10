@@ -10,7 +10,9 @@ group_id = 'test-group'
 
 message = {
     "bucket": "remsfal-chat-files",
-    "fileName": "bauliche_veraenderung_bild.jpg"
+    "fileName": "test-image.png",
+    "sessionId": "123",
+    "messageId": "123",
 }
 
 testConsumer = False

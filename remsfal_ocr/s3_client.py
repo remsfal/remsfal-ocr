@@ -12,11 +12,14 @@ client = Minio(
     secure=False
 )
 
-def get_object_from_minio(bucket_name: str, object_name: str):
+def get_object_from_minio(bucket_name: str, object_name: str) -> bytes:
     try:
         print(f"[MinIO] Downloading {object_name} from bucket {bucket_name}...")
-        return client.get_object(bucket_name, object_name)
-    
+        response = client.get_object(bucket_name, object_name)
+        data = response.read()
+        response.close()
+        response.release_conn()
+        return data
     except Exception as e:
         print(f"[MinIO] Error fetching object: {e}")
         raise

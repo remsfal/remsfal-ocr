@@ -1,14 +1,9 @@
-import os
-from s3_client import get_object_from_minio
+import numpy as np
+import cv2
 from paddleocr import PaddleOCR
-from pdf2image import convert_from_bytes
-
-USE_GPU = os.getenv("USE_GPU", "false")
+from s3_client import get_object_from_minio
 
 ocr = PaddleOCR(
-    use_angle_cls=True,
-    lang='de',
-    use_gpu=USE_GPU,
     use_doc_orientation_classify=False,
     use_doc_unwarping=False,
     use_textline_orientation=False,
@@ -16,16 +11,18 @@ ocr = PaddleOCR(
 
 def extract_text_from_s3(bucket: str, object_name: str) -> str:
     print(f"[OCR] Processing {bucket}/{object_name}")
-    file_stream = get_object_from_minio(bucket, object_name)
-    content = file_stream.read()
+    byte_data = get_object_from_minio(bucket, object_name)
+    np_array = np.frombuffer(byte_data, np.uint8)
+    image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 
-    return extract_text_from_image_bytes(content)
+    if image is None:
+        print("[OCR] Failed to decode image.")
+        return ""
 
-
-def extract_text_from_image_bytes(img_bytes: bytes) -> str:
-    result = ocr.ocr(img_bytes, cls=True)
-    if not result or not result[0]:
+    result = ocr.predict(image)
+    if not result or not result[0].get("rec_texts"):
         print("[OCR] No text found in image.")
         return ""
-    text_lines = [line[1][0] for line in result[0]]
+
+    text_lines = result[0]["rec_texts"]
     return "\n".join(text_lines)
