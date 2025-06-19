@@ -19,6 +19,7 @@ def get_object_from_minio(bucket_name: str, object_name: str) -> bytes:
         data = response.read()
         response.close()
         response.release_conn()
+        print(f"[MinIO] Download completed")
         return data
     except Exception as e:
         print(f"[MinIO] Error fetching object: {e}")

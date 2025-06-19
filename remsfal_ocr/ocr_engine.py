@@ -4,9 +4,8 @@ from paddleocr import PaddleOCR
 from s3_client import get_object_from_minio
 
 ocr = PaddleOCR(
-    use_doc_orientation_classify=False,
-    use_doc_unwarping=False,
-    use_textline_orientation=False,
+    use_angle_cls=True,
+    lang='de',
 )
 
 def extract_text_from_s3(bucket: str, object_name: str) -> str:
@@ -19,10 +18,10 @@ def extract_text_from_s3(bucket: str, object_name: str) -> str:
         print("[OCR] Failed to decode image.")
         return ""
 
-    result = ocr.predict(image)
-    if not result or not result[0].get("rec_texts"):
+    result = ocr.ocr(image)
+    if not result or not result[0]:
         print("[OCR] No text found in image.")
         return ""
 
-    text_lines = result[0]["rec_texts"]
-    return "\n".join(text_lines)
+    text_lines = [line[1][0] for line in result[0]]
+    return " ".join(text_lines)

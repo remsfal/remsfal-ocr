@@ -15,6 +15,7 @@ def start_kafka_listener():
         group_id=GROUP_ID,
         bootstrap_servers=KAFKA_BROKER,
         value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+        session_timeout_ms=30000,
     )
 
     producer = KafkaProducer(
