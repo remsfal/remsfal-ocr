@@ -9,7 +9,6 @@ TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")
 
 def start_kafka_listener():
-
     consumer = KafkaConsumer(
         TOPIC_IN,
         group_id=GROUP_ID,
