@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from kafka import KafkaConsumer, KafkaProducer
 from ocr_engine import extract_text_from_s3
 
@@ -9,20 +10,29 @@ TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")
 
 def start_kafka_listener():
-    consumer = KafkaConsumer(
-        TOPIC_IN,
-        group_id=GROUP_ID,
-        bootstrap_servers=KAFKA_BROKER,
-        value_deserializer=lambda m: json.loads(m.decode("utf-8")),
-        session_timeout_ms=30000,
-    )
+    retries = 25
+    delay = 5  # seconds
 
-    producer = KafkaProducer(
-        bootstrap_servers=[KAFKA_BROKER],
-        value_serializer=lambda v: json.dumps(v).encode("utf-8")
-    )
-
-    print(f"[OCR] Listening to topic '{TOPIC_IN}'...")
+    for attempt in range(retries):
+        try:
+            consumer = KafkaConsumer(
+                TOPIC_IN,
+                group_id=GROUP_ID,
+                bootstrap_servers=KAFKA_BROKER,
+                value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+                session_timeout_ms=30000,
+            )
+            producer = KafkaProducer(
+                bootstrap_servers=[KAFKA_BROKER],
+                value_serializer=lambda v: json.dumps(v).encode("utf-8")
+            )
+            print(f"[OCR] Listening to topic '{TOPIC_IN}'...")
+            break
+        except:
+            print(f"[OCR] Kafka not reachable, retrying in {delay}s... ({attempt + 1}/{retries})")
+            time.sleep(delay)
+    else:
+        raise Exception("Kafka could not be reached after several attempts")
 
     for message in consumer:
         try:
