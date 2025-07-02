@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 from paddleocr import PaddleOCR
 from s3_client import get_object_from_minio
+import os
+
+os.environ["PADDLEOCR_HOME"] = os.getenv("PADDLEOCR_HOME", "/usr/local/app/.paddleocr")
 
 ocr = PaddleOCR(
     use_angle_cls=True,
