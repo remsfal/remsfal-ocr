@@ -16,15 +16,15 @@ permissions:
 
 jobs:
   build:
-    name: "Python 3.12 Build"
+    name: "Python 3.13 Build"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Set up Python 3.12
+    - name: Set up Python 3.13
       uses: actions/setup-python@v3
       with:
-        python-version: "3.12"
+        python-version: "3.13"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
