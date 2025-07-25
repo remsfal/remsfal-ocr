@@ -49,3 +49,9 @@ You can run all tests in the test/ folder using:
 ```bash
 pytest test
 ```
+
+### Build Docker Image
+
+```bash
+docker build -t paddleocr-app -f docker/Dockerfile .
+```

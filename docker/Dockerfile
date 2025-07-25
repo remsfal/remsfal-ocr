@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.13
 
 ENV APP_HOME=/home/app
 
@@ -6,7 +6,9 @@ ENV APP_HOME=/home/app
 RUN useradd --create-home --home-dir $APP_HOME app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
+RUN apt-get update \
+    && apt-get install -y libgl1 libglib2.0-0 \
+    && apt-get clean
 
 WORKDIR /usr/local/app/src
 
@@ -20,5 +22,11 @@ RUN mkdir -p $APP_HOME/.paddleocr && \
     chown -R app:app $APP_HOME
 
 USER app
+
+# set number of threads
+ENV OMP_NUM_THREADS=8
+
+# download models for offline usage
+RUN mkdir -p $APP_HOME/.paddleocr/models && python download_models.py
 
 CMD ["python", "main.py"]
