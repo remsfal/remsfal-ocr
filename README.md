@@ -53,5 +53,5 @@ pytest test
 ### Build Docker Image
 
 ```bash
-docker build -t paddleocr-app -f docker/Dockerfile .
+docker build -t remsfal/remsfal-ocr:dev -f docker/Dockerfile .
 ```
