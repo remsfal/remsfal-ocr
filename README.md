@@ -5,7 +5,7 @@ It listens for document processing requests sent by the chat service via Kafka, 
 
 By default:
 
-- Kafka is expected to be available at `localhost:9092`
+- Kafka is expected to be available at `localhost:39092`
 - MinIO is expected to be available at `localhost:9000`
 
 ## Setup
@@ -22,9 +22,10 @@ By default:
 
 The following environment variables can be used to override the default values:
 
-- `KAFKA_BROKER` = `localhost:9092`
+- `KAFKA_BROKER` = `localhost:39092`
 - `KAFKA_TOPIC_IN` = `ocr.documents.to_process`
 - `KAFKA_TOPIC_OUT` = `ocr.documents.processed`
+- `KAFKA_TOPIC_DLQ` = `ocr.documents.dlq`
 - `GROUP_ID` = `ocr-service`
 - `MINIO_ENDPOINT` = `localhost:9000`
 - `MINIO_ACCESS_KEY` = `minioadmin`
