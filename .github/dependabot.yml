@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Labels on pull requests for version updates only
     labels:
       - "GitHub actions versions"
