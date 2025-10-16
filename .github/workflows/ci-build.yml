@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.12, 3.13]
+        python-version: ['3.12', '3.13']
 
     steps:
       - name: Checkout
@@ -43,7 +43,7 @@ jobs:
           # Also show statistics in console
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Upload Flake8 Reports (only on latest version)
-        if: ${{ matrix.node-version == '3.13' }}
+        if: ${{ matrix.python-version == '3.13' }}
         uses: actions/upload-artifact@v4
         with:
           name: flake8-${{ github.run_id }}
@@ -54,7 +54,7 @@ jobs:
         run: |
           python -m pytest test/ --cov=src --cov-report=lcov --cov-report=xml --cov-report=term-missing
       - name: Upload Coverage Reports (only on latest version)
-        if: ${{ matrix.node-version == '3.13' }}
+        if: ${{ matrix.python-version == '3.13' }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ github.run_id }}
