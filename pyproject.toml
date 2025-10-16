@@ -27,10 +27,10 @@ exclude_lines = [
 ]
 
 [tool.coverage.html]
-directory = "htmlcov"
+directory = "coverage/html"
 
 [tool.coverage.xml]
-output = "coverage.xml"
+output = "coverage/coverage.xml"
 
 [tool.coverage.lcov]
-output = "coverage.lcov"
+output = "coverage/coverage.lcov"

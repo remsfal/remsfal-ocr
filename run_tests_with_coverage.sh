@@ -6,8 +6,9 @@ python -m pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing --c
 
 echo ""
 echo "Coverage reports generated:"
-echo "- LCOV format: coverage.lcov"
-echo "- HTML report: htmlcov/index.html"
+echo "- LCOV format: coverage/coverage.lcov"
+echo "- HTML report: coverage/html/index.html"
+echo "- XML format: coverage/coverage.xml"
 echo "- Terminal report shown above"
 
 echo ""

@@ -51,8 +51,9 @@ pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
 ```
 
 ## Output Files
-- `coverage.lcov` - LCOV format report for CI/CD integration
-- `htmlcov/index.html` - Interactive HTML report
+- `coverage/coverage.lcov` - LCOV format report for CI/CD integration
+- `coverage/html/index.html` - Interactive HTML report
+- `coverage/coverage.xml` - XML format for tools like Codecov
 - Terminal summary with missing line details
 
 ## Key Features

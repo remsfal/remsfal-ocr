@@ -65,8 +65,9 @@ Or use the provided script:
 ```
 
 This will generate:
-- `coverage.lcov` - LCOV format coverage report
-- `htmlcov/index.html` - HTML coverage report  
+- `coverage/coverage.lcov` - LCOV format coverage report
+- `coverage/html/index.html` - HTML coverage report
+- `coverage/coverage.xml` - XML format coverage report
 - Terminal coverage summary
 
 Current test coverage: **96%** of source code lines covered.
