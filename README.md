@@ -68,6 +68,7 @@ This will generate:
 - `coverage/coverage.lcov` - LCOV format coverage report
 - `coverage/html/index.html` - HTML coverage report
 - `coverage/coverage.xml` - XML format coverage report
+- `report/flake8-report.txt` - Flake8 linting report
 - Terminal coverage summary
 
 Current test coverage: **96%** of source code lines covered.

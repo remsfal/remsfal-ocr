@@ -54,6 +54,7 @@ pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
 - `coverage/coverage.lcov` - LCOV format report for CI/CD integration
 - `coverage/html/index.html` - Interactive HTML report
 - `coverage/coverage.xml` - XML format for tools like Codecov
+- `report/flake8-report.txt` - Flake8 linting report
 - Terminal summary with missing line details
 
 ## Key Features
