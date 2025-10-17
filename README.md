@@ -1,3 +1,9 @@
+<img src="https://remsfal.de/logo_upscaled.png" width="60%">
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=remsfal_remsfal-ocr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=remsfal_remsfal-ocr)
+![Contributors](https://img.shields.io/github/contributors/remsfal/remsfal-ocr)
+
 # REMSFAL OCR Microservice
 
 The _REMSFAL OCR Microservice_ is a stateless Python service for text extraction within the REMSFAL project. It is intended to work together with the **Remsfal Chat Microservice**.  
