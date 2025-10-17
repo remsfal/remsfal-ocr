@@ -61,3 +61,20 @@ jobs:
           path: coverage/
           retention-days: 1
           if-no-files-found: error
+
+  check-branches:
+    name: "Check Pull Request Conditions"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Check PR branches
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$HEAD_REF" == "main" ] && [ "$BASE_REF" == "main" ]; then
+            echo "Pull Requests to main branch are only allowed from developer branches that are not named <main>."
+            exit 1
+          fi
