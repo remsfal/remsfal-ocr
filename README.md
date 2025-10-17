@@ -1,3 +1,9 @@
+<img src="https://remsfal.de/logo_upscaled.png" width="60%">
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=remsfal_remsfal-ocr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=remsfal_remsfal-ocr)
+![Contributors](https://img.shields.io/github/contributors/remsfal/remsfal-ocr)
+
 # REMSFAL OCR Microservice
 
 The _REMSFAL OCR Microservice_ is a stateless Python service for text extraction within the REMSFAL project. It is intended to work together with the **Remsfal Chat Microservice**.  
@@ -50,6 +56,29 @@ You can run all tests in the test/ folder using:
 ```bash
 pytest test
 ```
+
+#### Test Coverage
+
+To run tests with coverage reporting in lcov format:
+
+```bash
+pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
+```
+
+Or use the provided script:
+
+```bash
+./run_tests_with_coverage.sh
+```
+
+This will generate:
+- `coverage/coverage.lcov` - LCOV format coverage report
+- `coverage/html/index.html` - HTML coverage report
+- `coverage/coverage.xml` - XML format coverage report
+- `report/flake8-report.txt` - Flake8 linting report
+- Terminal coverage summary
+
+Current test coverage: **96%** of source code lines covered.
 
 ### Build Docker Image
 
