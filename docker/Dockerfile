@@ -23,8 +23,6 @@ COPY src/ src/
 # Install project dependencies for production (only runtime deps, not dev/test)
 RUN pip install --no-cache-dir .
 
-WORKDIR /usr/local/app/src
-
 # Ensure app user owns their home directory
 RUN mkdir -p $APP_HOME/.paddleocr && \
     chown -R app:app $APP_HOME
@@ -35,6 +33,6 @@ USER app
 ENV OMP_NUM_THREADS=8
 
 # download models for offline usage
-RUN mkdir -p $APP_HOME/.paddleocr/models && python download_models.py
+RUN mkdir -p $APP_HOME/.paddleocr/models && python src/download_models.py
 
-CMD ["hatch", "run", "start"]
+CMD ["python", "src/main.py"]
