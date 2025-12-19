@@ -31,14 +31,17 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: coverage-${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/artifacts/coverage
-      - name: Prepare coverage directory and move coverage.lcov
+      - name: Prepare coverage directory and move coverage files
         run: |
           mkdir -p coverage
+          if [ -f "${{ runner.temp }}/artifacts/coverage/coverage.xml" ]; then
+            mv "${{ runner.temp }}/artifacts/coverage/coverage.xml" coverage/
+          else
+            echo "Error: coverage.xml not found in coverage artifact." >&2
+            exit 1
+          fi
           if [ -f "${{ runner.temp }}/artifacts/coverage/coverage.lcov" ]; then
             mv "${{ runner.temp }}/artifacts/coverage/coverage.lcov" coverage/
-          else
-            echo "Error: coverage.lcov not found in coverage artifact." >&2
-            exit 1
           fi
       - name: Download Flake8 Report from CI Build
         uses: actions/download-artifact@v7
