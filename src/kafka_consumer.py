@@ -1,8 +1,12 @@
 import json
 import os
 import time
+from dotenv import load_dotenv
 from kafka import KafkaConsumer, KafkaProducer
 from ocr_engine import extract_text_from_s3
+
+# Load environment variables from .env file
+load_dotenv()
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")

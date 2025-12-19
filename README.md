@@ -42,8 +42,10 @@ By default:
 If you prefer to use pip directly:
 
 ```bash
-pip install -r requirements.txt
+pip install .
 ```
+
+This installs all dependencies from `pyproject.toml`.
 
 ### Environment Variables
 
@@ -57,29 +59,66 @@ The following environment variables can be used to override the default values:
 - `MINIO_ACCESS_KEY` = `minioadmin`
 - `MINIO_SECRET_KEY` = `minioadminpassword`
 
-### Run
+Copy the example environment file:
 
-#### Using Hatch
+```bash
+cp .env.example .env
+```
+
+### Local Development
+
+For local development and testing, you need Kafka and MinIO running. Use the provided Docker Compose configuration:
+
+```bash
+# Start Kafka, MinIO, and Kafka UI
+docker compose up -d
+
+# Check if services are running
+docker compose ps
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+Services will be available at:
+- **Kafka**: localhost:9092
+- **Kafka UI**: http://localhost:8090 (for monitoring topics and messages)
+- **MinIO API**: localhost:9000
+- **MinIO Console**: http://localhost:9001 (login: minioadmin/minioadminpassword)
+
+### Run
 
 Start the application with:
 
 ```bash
-hatch run python src/main.py
-```
-
-#### Using Python directly
-
-```bash
-python src/main.py
+hatch run start
 ```
 
 ⚠️ A Kafka broker must be running and reachable at startup otherwise the service will fail to connect.
 
 For instructions on running other microservices and Docker containers, please refer to the main [REMSFAL repository](https://github.com/remsfal/remsfal-backend/blob/main/README.md).
 
-### Running Tests
+### Testing the OCR Service
 
-#### Using Hatch (Recommended)
+After starting the Docker services and the OCR application, you can test the OCR functionality:
+
+```bash
+# Upload an image and send OCR request
+hatch run python scripts/test_ocr.py test/resources/test-image.png
+```
+
+This script will:
+1. Upload the image to MinIO bucket 'documents'
+2. Send an OCR request message to Kafka topic 'ocr.documents.to_process'
+3. Listen for the result on topic 'ocr.documents.processed'
+4. Print the extracted text
+
+You can also monitor the Kafka topics in the Kafka UI at http://localhost:8090.
+
+### Running Tests
 
 Run all tests:
 
@@ -105,35 +144,51 @@ This will generate:
 - `coverage/coverage.xml` - XML format coverage report
 - Terminal coverage summary
 
-#### Using pytest directly
+### Integration Tests
 
-You can also run tests directly with pytest:
+Integration tests use **testcontainers-python** to start real Kafka and MinIO containers, similar to Quarkus with Testcontainers. All tests (unit and integration) are in the `test/` directory and run together.
 
-```bash
-pytest test
-```
+#### Prerequisites
 
-Or with coverage:
+- Docker must be running on your system
+- Docker socket must be accessible
 
-```bash
-pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
-```
-
-#### Using the test script
-
-The provided script runs tests and linting:
+#### Running All Tests (Unit + Integration)
 
 ```bash
-./run_tests_with_coverage.sh
+# Run all tests (unit + integration)
+hatch run test
+
+# Run all tests with coverage
+hatch run test-cov
+
+# Run specific integration test
+hatch run test test/test_ocr_integration.py::test_kafka_container_starts
 ```
 
-This generates all coverage reports and a Flake8 linting report.
+The integration tests will:
+- Automatically start Kafka and MinIO containers
+- Run tests against real services
+- Clean up containers after tests complete
+- Generate a combined coverage report with unit tests
 
-Current test coverage: **96%** of source code lines covered.
+#### What's tested
+
+**Unit Tests:**
+- OCR engine logic with mocks
+- S3 client functionality
+- Kafka consumer behavior
+
+**Integration Tests:**
+- Kafka container lifecycle
+- MinIO container lifecycle
+- Kafka message producer/consumer flow
+- MinIO file upload/download
+- Integration between Kafka and MinIO
+
+For full end-to-end tests with the OCR service running, see comments in `test/test_ocr_integration.py`.
 
 ### Linting
-
-#### Using Hatch
 
 Run linting checks:
 
@@ -149,7 +204,7 @@ hatch run lint-report
 
 This will create `report/flake8-report.txt`.
 
-#### Run all checks
+### Run all checks
 
 Run both linting and tests with coverage:
 
@@ -158,8 +213,6 @@ hatch run check
 ```
 
 ### Building the Project
-
-#### Using Hatch
 
 Build the project (creates wheel and source distribution):
 

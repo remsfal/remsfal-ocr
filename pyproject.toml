@@ -30,6 +30,7 @@ dependencies = [
     "minio==7.2.15",
     "paddleocr==2.10.0",
     "paddlepaddle==3.0.0",
+    "python-dotenv==1.0.1",
     "setuptools==80.9.0",
 ]
 
@@ -38,6 +39,7 @@ test = [
     "pytest==8.4.1",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
+    "testcontainers[kafka,minio]>=4.0.0",
 ]
 lint = [
     "flake8>=7.0.0",
@@ -46,6 +48,7 @@ dev = [
     "pytest==8.4.1",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
+    "testcontainers[kafka,minio]>=4.0.0",
     "flake8>=7.0.0",
 ]
 
@@ -62,6 +65,7 @@ check = [
     "lint",
     "test-cov",
 ]
+start = "python src/main.py"
 
 [tool.hatch.envs.test]
 features = ["test"]
