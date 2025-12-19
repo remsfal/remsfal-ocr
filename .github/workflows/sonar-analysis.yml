@@ -31,7 +31,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: coverage-${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/artifacts/coverage
-      - name: Prepare coverage directory and move coverage files
+      - name: Prepare coverage directory and move coverage.xml
         run: |
           mkdir -p coverage
           if [ -f "${{ runner.temp }}/artifacts/coverage/coverage.xml" ]; then
