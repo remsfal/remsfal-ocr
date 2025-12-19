@@ -12,8 +12,8 @@ RUN apt-get update \
 
 WORKDIR /usr/local/app/src
 
-COPY requirements.txt ../
-RUN pip install --no-cache-dir -r ../requirements.txt
+COPY pyproject.toml ../
+RUN pip install --no-cache-dir ..
 
 COPY src/ .
 

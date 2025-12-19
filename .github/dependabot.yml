@@ -5,7 +5,7 @@ version: 2
 updates:
   - package-ecosystem: "pip"
     directories:
-      - "/" # Location of requirements.txt
+      - "/" # Location of pyproject.toml
     schedule:
       interval: "weekly"
   # Enable version updates for GitHub actions
