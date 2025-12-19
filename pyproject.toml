@@ -50,12 +50,7 @@ dev = [
 ]
 
 [tool.hatch.envs.default]
-dependencies = [
-    "pytest==8.4.1",
-    "pytest-cov>=6.0.0",
-    "pytest-mock>=3.14.0",
-    "flake8>=7.0.0",
-]
+features = ["dev"]
 
 [tool.hatch.envs.default.scripts]
 test = "pytest test/ {args}"
@@ -69,11 +64,7 @@ check = [
 ]
 
 [tool.hatch.envs.test]
-dependencies = [
-    "pytest==8.4.1",
-    "pytest-cov>=6.0.0",
-    "pytest-mock>=3.14.0",
-]
+features = ["test"]
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
