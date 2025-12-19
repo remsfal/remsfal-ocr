@@ -10,12 +10,20 @@ RUN apt-get update \
     && apt-get install -y libgl1 libglib2.0-0 \
     && apt-get clean
 
+# Install hatch and upgrade hatchling for Python 3.13 support
+RUN pip install --no-cache-dir hatch && \
+    pip install --no-cache-dir --upgrade hatchling
+
+WORKDIR /usr/local/app
+
+COPY pyproject.toml .
+COPY README.md .
+COPY src/ src/
+
+# Install project dependencies for production (only runtime deps, not dev/test)
+RUN pip install --no-cache-dir .
+
 WORKDIR /usr/local/app/src
-
-COPY pyproject.toml ../
-RUN pip install --no-cache-dir ..
-
-COPY src/ .
 
 # Ensure app user owns their home directory
 RUN mkdir -p $APP_HOME/.paddleocr && \
@@ -29,4 +37,4 @@ ENV OMP_NUM_THREADS=8
 # download models for offline usage
 RUN mkdir -p $APP_HOME/.paddleocr/models && python download_models.py
 
-CMD ["python", "main.py"]
+CMD ["hatch", "run", "start"]
