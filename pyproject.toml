@@ -1,3 +1,86 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "remsfal-ocr"
+version = "0.1.0"
+description = "REMSFAL OCR Microservice - A stateless Python service for text extraction"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "REMSFAL Team"}
+]
+keywords = ["ocr", "text-extraction", "kafka", "minio", "paddleocr"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "kafka-python==2.2.9",
+    "minio==7.2.15",
+    "paddleocr==2.10.0",
+    "paddlepaddle==3.0.0",
+    "setuptools==80.9.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==8.4.1",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+]
+lint = [
+    "flake8>=7.0.0",
+]
+dev = [
+    "pytest==8.4.1",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "flake8>=7.0.0",
+]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest==8.4.1",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "flake8>=7.0.0",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest test/ {args}"
+test-cov = "pytest test/ --cov=src --cov-report=term-missing {args}"
+test-cov-full = "pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing --cov-report=html --cov-report=xml {args}"
+lint = "flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics"
+lint-report = "flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --output-file=report/flake8-report.txt"
+check = [
+    "lint",
+    "test-cov",
+]
+
+[tool.hatch.envs.test]
+dependencies = [
+    "pytest==8.4.1",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.coverage.run]
 source = ["src"]
 omit = [

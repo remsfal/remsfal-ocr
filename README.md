@@ -19,10 +19,31 @@ By default:
 ### Requirements
 
 - Python >= 3.8
-- Install dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
+- [Hatch](https://hatch.pypa.io/) (Python project manager)
+
+### Installation
+
+#### Using Hatch (Recommended)
+
+1. Install Hatch:
+   ```bash
+   pip install hatch
+   ```
+
+2. Create a virtual environment and install dependencies:
+   ```bash
+   hatch env create
+   ```
+
+   This will automatically create a virtual environment and install all project dependencies.
+
+#### Using pip (Alternative)
+
+If you prefer to use pip directly:
+
+```bash
+pip install -r requirements.txt
+```
 
 ### Environment Variables
 
@@ -38,7 +59,15 @@ The following environment variables can be used to override the default values:
 
 ### Run
 
+#### Using Hatch
+
 Start the application with:
+
+```bash
+hatch run python src/main.py
+```
+
+#### Using Python directly
 
 ```bash
 python src/main.py
@@ -50,34 +79,95 @@ For instructions on running other microservices and Docker containers, please re
 
 ### Running Tests
 
-You can run all tests in the test/ folder using:
+#### Using Hatch (Recommended)
+
+Run all tests:
 
 ```bash
-pytest test
+hatch run test
 ```
 
-#### Test Coverage
-
-To run tests with coverage reporting in lcov format:
+Run tests with coverage:
 
 ```bash
-pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
+hatch run test-cov
 ```
 
-Or use the provided script:
+Run tests with full coverage reports (LCOV, HTML, XML):
 
 ```bash
-./run_tests_with_coverage.sh
+hatch run test-cov-full
 ```
 
 This will generate:
 - `coverage/coverage.lcov` - LCOV format coverage report
 - `coverage/html/index.html` - HTML coverage report
 - `coverage/coverage.xml` - XML format coverage report
-- `report/flake8-report.txt` - Flake8 linting report
 - Terminal coverage summary
 
+#### Using pytest directly
+
+You can also run tests directly with pytest:
+
+```bash
+pytest test
+```
+
+Or with coverage:
+
+```bash
+pytest test/ --cov=src --cov-report=lcov --cov-report=term-missing
+```
+
+#### Using the test script
+
+The provided script runs tests and linting:
+
+```bash
+./run_tests_with_coverage.sh
+```
+
+This generates all coverage reports and a Flake8 linting report.
+
 Current test coverage: **96%** of source code lines covered.
+
+### Linting
+
+#### Using Hatch
+
+Run linting checks:
+
+```bash
+hatch run lint
+```
+
+Generate a linting report:
+
+```bash
+hatch run lint-report
+```
+
+This will create `report/flake8-report.txt`.
+
+#### Run all checks
+
+Run both linting and tests with coverage:
+
+```bash
+hatch run check
+```
+
+### Building the Project
+
+#### Using Hatch
+
+Build the project (creates wheel and source distribution):
+
+```bash
+hatch build
+```
+
+The build artifacts will be in the `dist/` directory.
 
 ### Build Docker Image
 
