@@ -30,6 +30,47 @@ TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")
 
 
+def process_message(message, producer):
+    """Process a single Kafka message and publish the result.
+
+    This function:
+    1. Validates the incoming message using Pydantic
+    2. Extracts text from the document stored in S3
+    3. Creates an output message with the extracted text
+    4. Publishes the result to the output Kafka topic
+
+    Args:
+        message: Kafka message containing the OCR request
+        producer: KafkaProducer instance for publishing results
+
+    Raises:
+        ValidationError: If the input message schema is invalid
+        IOError/OSError: If S3 download or file operations fail
+        Exception: For any other unexpected errors during processing
+    """
+    payload = message.value
+    logger.info(f"Received: {payload}")
+
+    # Validate and parse input message with Pydantic
+    input_msg = OcrInputMessage.model_validate(payload)
+
+    # Extract text from S3
+    extracted_text = extract_text_from_s3(input_msg.bucket, input_msg.fileName)
+
+    # Create and validate output message
+    output_msg = OcrOutputMessage(
+        sessionId=input_msg.sessionId,
+        messageId=input_msg.messageId,
+        extractedText=extracted_text
+    )
+
+    # Serialize to dict for Kafka (camelCase keys)
+    result = output_msg.model_dump(by_alias=True)
+
+    producer.send(TOPIC_OUT, result)
+    logger.info(f"Published result to '{TOPIC_OUT}': {result}")
+
+
 def start_kafka_listener():
     """Start the Kafka consumer with self-healing capabilities.
 
@@ -92,28 +133,7 @@ def start_kafka_listener():
         try:
             for message in consumer:
                 try:
-                    payload = message.value
-                    logger.info(f"Received: {payload}")
-
-                    # Validate and parse input message with Pydantic
-                    input_msg = OcrInputMessage.model_validate(payload)
-
-                    # Extract text from S3
-                    extracted_text = extract_text_from_s3(input_msg.bucket, input_msg.fileName)
-
-                    # Create and validate output message
-                    output_msg = OcrOutputMessage(
-                        sessionId=input_msg.sessionId,
-                        messageId=input_msg.messageId,
-                        extractedText=extracted_text
-                    )
-
-                    # Serialize to dict for Kafka (camelCase keys)
-                    result = output_msg.model_dump(by_alias=True)
-
-                    producer.send(TOPIC_OUT, result)
-                    logger.info(f"Published result to '{TOPIC_OUT}': {result}")
-
+                    process_message(message, producer)
                 except ValidationError as e:
                     logger.error(f"Validation error - skipping message: {e}")
                 except (IOError, OSError) as e:

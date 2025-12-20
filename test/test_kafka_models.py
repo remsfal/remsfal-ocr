@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from kafka_models import OcrInputMessage, OcrOutputMessage
 
-
 class TestOcrInputMessage:
     """Test cases for OcrInputMessage model."""
 

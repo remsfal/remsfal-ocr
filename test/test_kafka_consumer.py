@@ -1,8 +1,7 @@
 """Tests for Kafka consumer functionality."""
 
 import pytest
-import json
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 import sys
 import os
 
