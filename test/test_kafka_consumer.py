@@ -124,7 +124,7 @@ class TestKafkaConsumer:
                 assert MockKafkaConsumer.call_count == 25
                 assert mock_sleep.call_count == 25
 
-    def test_kafka_listener_message_processing_error(self):
+    def test_kafka_listener_message_processing_error(self, caplog):
         """Test handling of message processing errors."""
         with patch.dict('sys.modules', {'paddleocr': Mock()}):
             import kafka_consumer
@@ -144,8 +144,7 @@ class TestKafkaConsumer:
             mock_producer = Mock()
 
             with patch('kafka_consumer.KafkaConsumer') as MockKafkaConsumer, \
-                 patch('kafka_consumer.KafkaProducer') as MockKafkaProducer, \
-                 patch('builtins.print') as mock_print:
+                 patch('kafka_consumer.KafkaProducer') as MockKafkaProducer:
 
                 MockKafkaConsumer.return_value = mock_consumer
                 MockKafkaProducer.return_value = mock_producer
@@ -153,38 +152,36 @@ class TestKafkaConsumer:
                 # Call the listener (will return when iterator is exhausted)
                 kafka_consumer.start_kafka_listener()
 
-                # Verify validation error was printed (Pydantic validation)
-                error_printed = any(
-                    "Validation error" in str(call)
-                    for call in mock_print.call_args_list
+                # Verify validation error was logged (Pydantic validation)
+                assert any(
+                    "Validation error" in record.message
+                    for record in caplog.records
                 )
-                assert error_printed
 
-    def test_kafka_listener_ocr_extraction_error(self):
+    def test_kafka_listener_ocr_extraction_error(self, caplog):
         """Test handling of OCR extraction errors."""
         with patch.dict('sys.modules', {'paddleocr': Mock()}):
             import kafka_consumer
-        
+
             test_payload = {
                 "sessionId": "test-session-123",
                 "messageId": "test-message-456",
                 "bucket": "test-bucket",
                 "fileName": "test-document.pdf"
             }
-            
+
             mock_message = Mock()
             mock_message.value = test_payload
-            
+
             mock_consumer = Mock()
             mock_consumer.__iter__ = Mock(return_value=iter([mock_message]))
-            
+
             mock_producer = Mock()
-            
+
             with patch('kafka_consumer.KafkaConsumer') as MockKafkaConsumer, \
                  patch('kafka_consumer.KafkaProducer') as MockKafkaProducer, \
-                 patch('kafka_consumer.extract_text_from_s3') as mock_extract_text, \
-                 patch('builtins.print') as mock_print:
-                
+                 patch('kafka_consumer.extract_text_from_s3') as mock_extract_text:
+
                 MockKafkaConsumer.return_value = mock_consumer
                 MockKafkaProducer.return_value = mock_producer
                 mock_extract_text.side_effect = Exception("OCR processing failed")
@@ -192,9 +189,8 @@ class TestKafkaConsumer:
                 # Call the listener (will return when iterator is exhausted)
                 kafka_consumer.start_kafka_listener()
 
-                # Verify error was printed
-                error_printed = any(
-                    "Unexpected error" in str(call)
-                    for call in mock_print.call_args_list
+                # Verify error was logged
+                assert any(
+                    "Unexpected error" in record.message
+                    for record in caplog.records
                 )
-                assert error_printed
