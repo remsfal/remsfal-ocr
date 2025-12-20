@@ -6,7 +6,7 @@
 
 # REMSFAL OCR Microservice
 
-The _REMSFAL OCR Microservice_ is a stateless Python service for text extraction within the REMSFAL project. It is intended to work together with the **Remsfal Chat Microservice**.  
+The _REMSFAL OCR Microservice_ is a stateless Python service for text extraction within the REMSFAL project. It is intended to work together with the [**REMSFAL Ticketing Microservice**](https://github.com/remsfal/remsfal-backend/tree/main/remsfal-services/remsfal-ticketing).  
 It listens for document processing requests sent by the chat service via Kafka, performs OCR, and returns the extracted text as a Kafka event.
 
 By default:
