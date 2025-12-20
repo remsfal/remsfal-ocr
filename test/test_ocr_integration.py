@@ -3,9 +3,7 @@ Integration tests for OCR service using testcontainers.
 These tests start real Kafka and MinIO containers and test the complete flow.
 """
 import json
-import os
 import pytest
-import time
 from io import BytesIO
 from pathlib import Path
 from testcontainers.kafka import KafkaContainer
