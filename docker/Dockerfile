@@ -7,7 +7,7 @@ RUN useradd --create-home --home-dir $APP_HOME app
 
 # Install system dependencies
 RUN apt-get update \
-    && apt-get install -y libgl1 libglib2.0-0 ccache \
+    && apt-get install -y ccache libgl1 libglib2.0-0 \
     && apt-get clean
 
 # Install hatch and upgrade hatchling for Python 3.13 support
@@ -31,6 +31,9 @@ USER app
 
 # set number of threads (PaddlePaddle recommends 1 to avoid conflicts)
 ENV OMP_NUM_THREADS=1
+
+# Ensure Python output is not buffered (important for logging visibility)
+ENV PYTHONUNBUFFERED=1
 
 # download models for offline usage
 RUN mkdir -p $APP_HOME/.paddleocr/models && python src/download_models.py

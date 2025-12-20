@@ -11,7 +11,6 @@ import sys
 from dotenv import load_dotenv
 from kafka import KafkaProducer, KafkaConsumer
 from minio import Minio
-from io import BytesIO
 
 # Load environment variables from .env file
 load_dotenv()
@@ -91,7 +90,7 @@ def listen_for_results(timeout_ms: int = 30000):
 
     for message in consumer:
         result = message.value
-        print(f"\nReceived OCR result:")
+        print("\nReceived OCR result:")
         print(json.dumps(result, indent=2))
         break
     else:

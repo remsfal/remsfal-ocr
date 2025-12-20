@@ -1,8 +1,7 @@
 """Tests for Kafka consumer functionality."""
 
 import pytest
-import json
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 import sys
 import os
 
@@ -63,12 +62,10 @@ class TestKafkaConsumer:
                 MockKafkaConsumer.return_value = mock_consumer
                 MockKafkaProducer.return_value = mock_producer
                 mock_extract_text.return_value = "Extracted text content"
-                
-                try:
-                    kafka_consumer.start_kafka_listener()
-                except StopIteration:
-                    pass  # Expected when the mocked iterator is exhausted
-                
+
+                # Call the listener (will return when iterator is exhausted)
+                kafka_consumer.start_kafka_listener()
+
                 # Verify OCR function was called
                 mock_extract_text.assert_called_once_with("test-bucket", "test-document.pdf")
                 
@@ -95,9 +92,9 @@ class TestKafkaConsumer:
                 
                 # Mock connection failures for first 3 attempts, then success
                 MockKafkaConsumer.side_effect = [
-                    Exception("Connection failed"),
-                    Exception("Connection failed"),
-                    Exception("Connection failed"),
+                    ConnectionError("Connection failed"),
+                    ConnectionError("Connection failed"),
+                    ConnectionError("Connection failed"),
                     mock_consumer  # Successful connection
                 ]
                 MockKafkaProducer.return_value = Mock()
@@ -117,90 +114,82 @@ class TestKafkaConsumer:
                  patch('kafka_consumer.time.sleep') as mock_sleep:
                 
                 # Mock connection failure for all attempts
-                MockKafkaConsumer.side_effect = Exception("Persistent connection error")
-                
-                with pytest.raises(Exception, match="Kafka could not be reached after several attempts"):
+                MockKafkaConsumer.side_effect = ConnectionError("Persistent connection error")
+
+                with pytest.raises(ConnectionError, match="Kafka could not be reached after several attempts"):
                     kafka_consumer.start_kafka_listener()
                 
                 # Verify all retries were attempted
                 assert MockKafkaConsumer.call_count == 25
                 assert mock_sleep.call_count == 25
 
-    def test_kafka_listener_message_processing_error(self):
+    def test_kafka_listener_message_processing_error(self, caplog):
         """Test handling of message processing errors."""
         with patch.dict('sys.modules', {'paddleocr': Mock()}):
             import kafka_consumer
-        
+
             # Mock message with missing required fields
             test_payload = {
                 "sessionId": "test-session-123",
                 # Missing messageId, bucket, fileName
             }
-            
+
             mock_message = Mock()
             mock_message.value = test_payload
-            
+
             mock_consumer = Mock()
             mock_consumer.__iter__ = Mock(return_value=iter([mock_message]))
-            
+
             mock_producer = Mock()
-            
+
             with patch('kafka_consumer.KafkaConsumer') as MockKafkaConsumer, \
-                 patch('kafka_consumer.KafkaProducer') as MockKafkaProducer, \
-                 patch('builtins.print') as mock_print:
-                
+                 patch('kafka_consumer.KafkaProducer') as MockKafkaProducer:
+
                 MockKafkaConsumer.return_value = mock_consumer
                 MockKafkaProducer.return_value = mock_producer
-                
-                try:
-                    kafka_consumer.start_kafka_listener()
-                except StopIteration:
-                    pass
-                
-                # Verify error was printed (message processing error)
-                error_printed = any(
-                    "Error processing message" in str(call) 
-                    for call in mock_print.call_args_list
-                )
-                assert error_printed
 
-    def test_kafka_listener_ocr_extraction_error(self):
+                # Call the listener (will return when iterator is exhausted)
+                kafka_consumer.start_kafka_listener()
+
+                # Verify validation error was logged (Pydantic validation)
+                assert any(
+                    "Validation error" in record.message
+                    for record in caplog.records
+                )
+
+    def test_kafka_listener_ocr_extraction_error(self, caplog):
         """Test handling of OCR extraction errors."""
         with patch.dict('sys.modules', {'paddleocr': Mock()}):
             import kafka_consumer
-        
+
             test_payload = {
                 "sessionId": "test-session-123",
                 "messageId": "test-message-456",
                 "bucket": "test-bucket",
                 "fileName": "test-document.pdf"
             }
-            
+
             mock_message = Mock()
             mock_message.value = test_payload
-            
+
             mock_consumer = Mock()
             mock_consumer.__iter__ = Mock(return_value=iter([mock_message]))
-            
+
             mock_producer = Mock()
-            
+
             with patch('kafka_consumer.KafkaConsumer') as MockKafkaConsumer, \
                  patch('kafka_consumer.KafkaProducer') as MockKafkaProducer, \
-                 patch('kafka_consumer.extract_text_from_s3') as mock_extract_text, \
-                 patch('builtins.print') as mock_print:
-                
+                 patch('kafka_consumer.extract_text_from_s3') as mock_extract_text:
+
                 MockKafkaConsumer.return_value = mock_consumer
                 MockKafkaProducer.return_value = mock_producer
                 mock_extract_text.side_effect = Exception("OCR processing failed")
-                
-                try:
-                    kafka_consumer.start_kafka_listener()
-                except StopIteration:
-                    pass
-                
-                # Verify error was printed
-                error_printed = any(
-                    "Error processing message" in str(call) 
-                    for call in mock_print.call_args_list
+
+                # Call the listener (will return when iterator is exhausted)
+                kafka_consumer.start_kafka_listener()
+
+                # Verify error was logged
+                assert any(
+                    "Unexpected error" in record.message
+                    for record in caplog.records
                 )
-                assert error_printed
