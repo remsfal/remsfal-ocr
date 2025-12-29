@@ -4,8 +4,8 @@ import json
 from kafka import KafkaConsumer, KafkaProducer
 
 
-PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
-BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 
 VALUE_SERIALIZER_LAMBDA = lambda v: json.dumps(v).encode('utf-8')
 
@@ -29,14 +29,14 @@ class KafkaConsumerFactory:
             KafkaConsumer: Configured Kafka consumer instance
         """
         config = {
-            "bootstrap_servers": [BROKER],
+            "bootstrap_servers": [KAFKA_BROKER],
             "group_id": group_id,
             "value_deserializer": lambda v: json.loads(v.decode("utf-8")),
             "session_timeout_ms": session_timeout_ms,
             "auto_offset_reset": "latest"
         }
 
-        if PROVIDER == "AZURE":
+        if KAFKA_PROVIDER == "AZURE":
             config.update({
                 "security_protocol": "SASL_SSL",
                 "sasl_mechanism": "PLAIN",
@@ -44,7 +44,7 @@ class KafkaConsumerFactory:
                 "sasl_plain_password": os.getenv("KAFKA_SASL_PASSWORD"),
                 "enable_auto_commit": True,
             })
-        elif PROVIDER == "LOCAL":
+        elif KAFKA_PROVIDER == "LOCAL":
             config.update({
 
             })
@@ -63,11 +63,11 @@ class KafkaProducerFactory:
             KafkaProducer: Configured Kafka producer instance
         """
         config = {
-            "bootstrap_servers": [BROKER],
+            "bootstrap_servers": [KAFKA_BROKER],
             "value_serializer": VALUE_SERIALIZER_LAMBDA,
         }
 
-        if PROVIDER == "AZURE":
+        if KAFKA_PROVIDER == "AZURE":
             config.update({
                 "security_protocol": "SASL_SSL",
                 "sasl_mechanism": "PLAIN",
@@ -75,7 +75,7 @@ class KafkaProducerFactory:
                 "sasl_plain_password": os.getenv("KAFKA_SASL_PASSWORD"),
                 "max_block_ms": 60000,
             })
-        elif PROVIDER == "LOCAL":
+        elif KAFKA_PROVIDER == "LOCAL":
             config.update({
                 "max_block_ms": 10000,
             })
