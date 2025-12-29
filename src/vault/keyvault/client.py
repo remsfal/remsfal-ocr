@@ -14,6 +14,13 @@ from core.secrets.base import SecretsVaultClient
 logger = logging.getLogger(__name__)
 
 
+SECRETS_MAPPING_KEYVAULT = {
+    "STORAGE_CONNECTION_STRING": "storage-connection-string",
+    "KAFKA_SASL_PASSWORD": "eventhub-sasl-password",
+    "KAFKA_BROKER": "eventhub-bootstrap-server"
+}
+
+
 class KeyVaultClient(SecretsVaultClient):
     """Azure Key Vault implementation of the secrets vault client interface.
     
@@ -73,6 +80,7 @@ class KeyVaultClient(SecretsVaultClient):
         Raises:
             Exception: If the secret cannot be retrieved (not found, permission errors, etc.)
         """
+        name = self._get_secret_name(name)
         try:
             logger.info(f"Retrieving secret '{name}' from Azure Key Vault...")
             secret = self.client.get_secret(name)
@@ -81,3 +89,10 @@ class KeyVaultClient(SecretsVaultClient):
         except Exception as e:
             logger.error(f"Error retrieving secret from Azure Key Vault: {e}")
             raise
+    
+    def _get_secret_name(self, name: str) -> str:
+        """Helper to format secret name if needed.
+        
+        Currently a no-op, but can be extended for naming conventions.
+        """
+        return SECRETS_MAPPING_KEYVAULT.get(name, name)

@@ -40,7 +40,7 @@ class KafkaConsumerFactory:
             config.update({
                 "security_protocol": "SASL_SSL",
                 "sasl_mechanism": "PLAIN",
-                "sasl_plain_username": os.getenv("KAFKA_SASL_USERNAME"),
+                "sasl_plain_username": "$ConnectionString",
                 "sasl_plain_password": os.getenv("KAFKA_SASL_PASSWORD"),
                 "enable_auto_commit": True,
             })
