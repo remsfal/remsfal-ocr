@@ -21,8 +21,10 @@ ocr = PaddleOCR(
     lang='de',
 )
 
-# Initialize storage client using factory
+# Get storage provider from environment (not a secret)
 STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
+
+# Initialize storage client using factory
 storage_client = StorageClientFactory.create(type=STORAGE_PROVIDER)
 
 

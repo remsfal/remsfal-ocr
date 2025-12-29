@@ -2,10 +2,18 @@ import os
 import json
 
 from kafka import KafkaConsumer, KafkaProducer
+from core.vault.client import SecretsVaultClientFactory
 
 
+# Get provider configuration from environment (not a secret)
 KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+
+# Initialize secrets client for sensitive data
+SECRETS_PROVIDER = os.getenv("SECRETS_PROVIDER", "LOCAL")
+secrets_client = SecretsVaultClientFactory.create(type=SECRETS_PROVIDER)
+
+# Get broker from secrets (sensitive data)
+KAFKA_BROKER = secrets_client.get_secret("KAFKA_BROKER")
 
 VALUE_SERIALIZER_LAMBDA = lambda v: json.dumps(v).encode('utf-8')
 
@@ -37,11 +45,13 @@ class KafkaConsumerFactory:
         }
 
         if KAFKA_PROVIDER == "AZURE":
+            sasl_password = secrets_client.get_secret("KAFKA_SASL_PASSWORD")
+                
             config.update({
                 "security_protocol": "SASL_SSL",
                 "sasl_mechanism": "PLAIN",
                 "sasl_plain_username": "$ConnectionString",
-                "sasl_plain_password": os.getenv("KAFKA_SASL_PASSWORD"),
+                "sasl_plain_password": sasl_password,
                 "enable_auto_commit": True,
             })
         elif KAFKA_PROVIDER == "LOCAL":
@@ -68,11 +78,14 @@ class KafkaProducerFactory:
         }
 
         if KAFKA_PROVIDER == "AZURE":
+            sasl_username = secrets_client.get_secret("KAFKA_SASL_USERNAME")
+            sasl_password = secrets_client.get_secret("KAFKA_SASL_PASSWORD")
+                
             config.update({
                 "security_protocol": "SASL_SSL",
                 "sasl_mechanism": "PLAIN",
-                "sasl_plain_username": os.getenv("KAFKA_SASL_USERNAME"),
-                "sasl_plain_password": os.getenv("KAFKA_SASL_PASSWORD"),
+                "sasl_plain_username": sasl_username,
+                "sasl_plain_password": sasl_password,
                 "max_block_ms": 60000,
             })
         elif KAFKA_PROVIDER == "LOCAL":

@@ -9,8 +9,13 @@ import os
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
 from core.storage.base import StorageClient
+from core.vault.client import SecretsVaultClientFactory
 
 logger = logging.getLogger(__name__)
+
+# Initialize secrets client
+SECRETS_PROVIDER = os.getenv("SECRETS_PROVIDER", "LOCAL")
+secrets_client = SecretsVaultClientFactory.create(type=SECRETS_PROVIDER)
 
 
 class AzureStorageClient(StorageClient):
@@ -20,11 +25,11 @@ class AzureStorageClient(StorageClient):
     """
 
     def __init__(self):
-        """Initialize Azure Storage client with configuration from environment variables."""
-        self.connection_string = os.getenv("STORAGE_CONNECTION_STRING")
+        """Initialize Azure Storage client with configuration from secrets vault."""
+        self.connection_string = secrets_client.get_secret("STORAGE_CONNECTION_STRING")
         
         if not self.connection_string:
-            raise ValueError("STORAGE_CONNECTION_STRING environment variable is required for Azure storage")
+            raise ValueError("STORAGE_CONNECTION_STRING secret is required for Azure storage")
         
         self.blob_service_client = BlobServiceClient.from_connection_string(
             self.connection_string

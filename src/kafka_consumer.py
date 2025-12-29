@@ -24,6 +24,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+# Get configuration from environment (not secrets)
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")

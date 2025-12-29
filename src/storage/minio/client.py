@@ -9,8 +9,13 @@ import os
 from minio import Minio
 
 from core.storage.base import StorageClient
+from core.vault.client import SecretsVaultClientFactory
 
 logger = logging.getLogger(__name__)
+
+# Initialize secrets client
+SECRETS_PROVIDER = os.getenv("SECRETS_PROVIDER", "LOCAL")
+secrets_client = SecretsVaultClientFactory.create(type=SECRETS_PROVIDER)
 
 
 class MinioStorageClient(StorageClient):
@@ -20,10 +25,10 @@ class MinioStorageClient(StorageClient):
     """
 
     def __init__(self):
-        """Initialize MinIO client with configuration from environment variables."""
-        self.endpoint = os.getenv("MINIO_ENDPOINT", "localhost:9000")
-        self.access_key = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-        self.secret_key = os.getenv("MINIO_SECRET_KEY", "minioadminpassword")
+        """Initialize MinIO client with configuration from secrets vault."""
+        self.endpoint = secrets_client.get_secret("MINIO_ENDPOINT")
+        self.access_key = secrets_client.get_secret("MINIO_ACCESS_KEY")
+        self.secret_key = secrets_client.get_secret("MINIO_SECRET_KEY")
         
         self.client = Minio(
             self.endpoint,

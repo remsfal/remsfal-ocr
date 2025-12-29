@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from core.kafka.client import KafkaConsumerFactory, KafkaProducerFactory
 from core.storage.client import StorageClientFactory
 
+# Get configuration from environment (not secrets)
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")

@@ -7,7 +7,7 @@ of the SecretsVaultClient interface.
 import logging
 import os
 
-from core.secrets.base import SecretsVaultClient
+from core.vault.base import SecretsVaultClient
 
 logger = logging.getLogger(__name__)
 

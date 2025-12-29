@@ -9,15 +9,16 @@ import os
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
 
-from core.secrets.base import SecretsVaultClient
+from core.vault.base import SecretsVaultClient
 
 logger = logging.getLogger(__name__)
 
 
-SECRETS_MAPPING_KEYVAULT = {
+KEYVAULT_SECRETS_MAPPING = {
     "STORAGE_CONNECTION_STRING": "storage-connection-string",
     "KAFKA_SASL_PASSWORD": "eventhub-sasl-password",
-    "KAFKA_BROKER": "eventhub-bootstrap-server"
+    "KAFKA_BROKER": "eventhub-bootstrap-server",
+    "KAFKA_SASL_USERNAME": "eventhub-sasl-username"
 }
 
 
@@ -95,4 +96,4 @@ class KeyVaultClient(SecretsVaultClient):
         
         Currently a no-op, but can be extended for naming conventions.
         """
-        return SECRETS_MAPPING_KEYVAULT.get(name, name)
+        return KEYVAULT_SECRETS_MAPPING.get(name, name)
