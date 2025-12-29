@@ -22,7 +22,8 @@ ocr = PaddleOCR(
 )
 
 # Initialize storage client using factory
-storage_client = StorageClientFactory.create()
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
+storage_client = StorageClientFactory.create(type=STORAGE_PROVIDER)
 
 
 def extract_text_from_s3(bucket: str, object_name: str) -> str:

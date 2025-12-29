@@ -20,13 +20,15 @@ from core.storage.client import StorageClientFactory
 
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
 
-# Create storage client using factory
-storage_client = StorageClientFactory.create()
 
 def upload_test_image(bucket_name: str, file_path: str):
     """Upload a test image to storage using the Factory Pattern."""
     print(f"Uploading {file_path} to storage bucket/container '{bucket_name}'...")
+
+    # Create storage client using factory with provider type
+    storage_client = StorageClientFactory.create(type=STORAGE_PROVIDER)
 
 
     # Read file data
