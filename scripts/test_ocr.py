@@ -9,11 +9,14 @@ import json
 import os
 import sys
 from dotenv import load_dotenv
-from kafka import KafkaProducer, KafkaConsumer
 from minio import Minio
 
-# Load environment variables from .env file
+# Load environment variables FIRST before any other imports that use them
 load_dotenv()
+
+# Add src directory to path to import factory
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from core.kafka.client import KafkaConsumerFactory, KafkaProducerFactory
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
@@ -58,10 +61,7 @@ def send_ocr_request(bucket_name: str, file_name: str):
     """Send OCR request to Kafka."""
     print(f"\nSending OCR request to Kafka topic '{TOPIC_IN}'...")
 
-    producer = KafkaProducer(
-        bootstrap_servers=[KAFKA_BROKER],
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    )
+    producer = KafkaProducerFactory.create()
 
     message = {
         "sessionId": "test-session-123",
@@ -79,13 +79,11 @@ def listen_for_results(timeout_ms: int = 30000):
     """Listen for OCR results from Kafka."""
     print(f"\nListening for results on topic '{TOPIC_OUT}'...")
 
-    consumer = KafkaConsumer(
-        TOPIC_OUT,
+    # Note: consumer_timeout_ms is not supported by factory, using default session_timeout_ms
+    consumer = KafkaConsumerFactory.create(
+        topic=TOPIC_OUT,
         group_id='test-consumer',
-        bootstrap_servers=[KAFKA_BROKER],
-        value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-        auto_offset_reset='latest',
-        consumer_timeout_ms=timeout_ms
+        session_timeout_ms=timeout_ms
     )
 
     for message in consumer:
