@@ -9,48 +9,44 @@ import json
 import os
 import sys
 from dotenv import load_dotenv
-from kafka import KafkaProducer, KafkaConsumer
-from minio import Minio
 
-# Load environment variables from .env file
+# Load environment variables FIRST before any other imports that use them
 load_dotenv()
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+# Add src directory to path to import factory
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from core.kafka.client import KafkaConsumerFactory, KafkaProducerFactory
+from core.storage.client import StorageClientFactory
+
+# Get configuration from environment (not secrets)
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadminpassword")
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
+KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
 
 
 def upload_test_image(bucket_name: str, file_path: str):
-    """Upload a test image to MinIO."""
-    print(f"Uploading {file_path} to MinIO bucket '{bucket_name}'...")
+    """Upload a test image to storage using the Factory Pattern."""
+    print(f"Uploading {file_path} to storage bucket/container '{bucket_name}'...")
 
-    client = Minio(
-        MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False
+    # Create storage client using factory with provider type
+    storage_client = StorageClientFactory.create(type=STORAGE_PROVIDER)
+
+
+    # Read file data
+    file_name = os.path.basename(file_path)
+    with open(file_path, 'rb') as f:
+        file_data = f.read()
+    
+    # Upload to storage
+    storage_client.put_object(
+        bucket_name,
+        file_name,
+        file_data,
+        len(file_data)
     )
 
-    # Create bucket if it doesn't exist
-    if not client.bucket_exists(bucket_name):
-        client.make_bucket(bucket_name)
-        print(f"Created bucket '{bucket_name}'")
-
-    # Upload file
-    file_name = os.path.basename(file_path)
-    with open(file_path, 'rb') as file_data:
-        file_stat = os.stat(file_path)
-        client.put_object(
-            bucket_name,
-            file_name,
-            file_data,
-            file_stat.st_size
-        )
-
-    print(f"Uploaded '{file_name}' to bucket '{bucket_name}'")
+    print(f"Uploaded '{file_name}' to bucket/container '{bucket_name}'")
     return file_name
 
 
@@ -58,10 +54,7 @@ def send_ocr_request(bucket_name: str, file_name: str):
     """Send OCR request to Kafka."""
     print(f"\nSending OCR request to Kafka topic '{TOPIC_IN}'...")
 
-    producer = KafkaProducer(
-        bootstrap_servers=[KAFKA_BROKER],
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    )
+    producer = KafkaProducerFactory.create(type=KAFKA_PROVIDER)
 
     message = {
         "sessionId": "test-session-123",
@@ -79,13 +72,12 @@ def listen_for_results(timeout_ms: int = 30000):
     """Listen for OCR results from Kafka."""
     print(f"\nListening for results on topic '{TOPIC_OUT}'...")
 
-    consumer = KafkaConsumer(
-        TOPIC_OUT,
+    # Note: consumer_timeout_ms is not supported by factory, using default session_timeout_ms
+    consumer = KafkaConsumerFactory.create(
+        topic=TOPIC_OUT,
         group_id='test-consumer',
-        bootstrap_servers=[KAFKA_BROKER],
-        value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-        auto_offset_reset='latest',
-        consumer_timeout_ms=timeout_ms
+        type=KAFKA_PROVIDER,
+        session_timeout_ms=timeout_ms
     )
 
     for message in consumer:

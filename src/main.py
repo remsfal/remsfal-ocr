@@ -4,6 +4,10 @@ This module starts the OCR microservice which listens for document processing
 requests via Kafka, performs OCR text extraction, and publishes results.
 """
 
+# Load environment variables FIRST before any other imports
+from dotenv import load_dotenv
+load_dotenv()
+
 import logging
 import sys
 from kafka_consumer import start_kafka_listener

@@ -13,21 +13,22 @@ import logging
 import os
 import time
 from dotenv import load_dotenv
-from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError
 from pydantic import ValidationError
 from ocr_engine import extract_text_from_s3
 from kafka_models import OcrInputMessage, OcrOutputMessage
+from core.kafka.client import KafkaConsumerFactory, KafkaProducerFactory
 
 # Load environment variables from .env file
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+# Get configuration from environment (not secrets)
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")
+KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
 
 
 def process_message(message, producer):
@@ -108,17 +109,13 @@ def start_kafka_listener():
         # Try to establish Kafka connection with exponential backoff
         for attempt in range(max_retries):
             try:
-                consumer = KafkaConsumer(
-                    TOPIC_IN,
+                consumer = KafkaConsumerFactory.create(
+                    topic=TOPIC_IN,
                     group_id=GROUP_ID,
-                    bootstrap_servers=KAFKA_BROKER,
-                    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+                    type=KAFKA_PROVIDER,
                     session_timeout_ms=30000,
                 )
-                producer = KafkaProducer(
-                    bootstrap_servers=[KAFKA_BROKER],
-                    value_serializer=lambda v: json.dumps(v).encode("utf-8")
-                )
+                producer = KafkaProducerFactory.create(type=KAFKA_PROVIDER)
                 logger.info(f"Listening to topic '{TOPIC_IN}'...")
                 retry_delay = initial_delay  # Reset delay on successful connection
                 break

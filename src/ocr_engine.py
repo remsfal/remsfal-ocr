@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import cv2
 from paddleocr import PaddleOCR
-from s3_client import get_object_from_minio
+from core.storage.client import StorageClientFactory
 import os
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,12 @@ ocr = PaddleOCR(
     use_angle_cls=True,
     lang='de',
 )
+
+# Get storage provider from environment (not a secret)
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
+
+# Initialize storage client using factory
+storage_client = StorageClientFactory.create(type=STORAGE_PROVIDER)
 
 
 def extract_text_from_s3(bucket: str, object_name: str) -> str:
@@ -47,7 +53,7 @@ def extract_text_from_s3(bucket: str, object_name: str) -> str:
         "Invoice Number 12345 Date 2024-01-01"
     """
     logger.info(f"Processing {bucket}/{object_name}")
-    byte_data = get_object_from_minio(bucket, object_name)
+    byte_data = storage_client.get_object(bucket, object_name)
     np_array = np.frombuffer(byte_data, np.uint8)
     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 
