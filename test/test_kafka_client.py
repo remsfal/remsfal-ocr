@@ -15,7 +15,6 @@ class TestKafkaConsumerFactory:
     def test_create_local_consumer(self):
         """Test factory creates consumer for LOCAL provider."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'localhost:9092'
         }):
@@ -33,6 +32,7 @@ class TestKafkaConsumerFactory:
                 consumer = KafkaConsumerFactory.create(
                     topic='test-topic',
                     group_id='test-group',
+                    type='LOCAL',
                     session_timeout_ms=10000
                 )
                 
@@ -46,7 +46,6 @@ class TestKafkaConsumerFactory:
     def test_create_azure_consumer(self):
         """Test factory creates consumer with SASL for AZURE provider."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'AZURE',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'mynamespace.servicebus.windows.net:9093',
             'KAFKA_SASL_PASSWORD': 'connection-string-password'
@@ -64,7 +63,8 @@ class TestKafkaConsumerFactory:
                 
                 consumer = KafkaConsumerFactory.create(
                     topic='test-topic',
-                    group_id='test-group'
+                    group_id='test-group',
+                    type='AZURE'
                 )
                 
                 assert consumer == mock_consumer
@@ -77,7 +77,6 @@ class TestKafkaConsumerFactory:
     def test_consumer_with_default_timeout(self):
         """Test consumer factory uses default session timeout."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'localhost:9092'
         }):
@@ -93,7 +92,8 @@ class TestKafkaConsumerFactory:
                 
                 KafkaConsumerFactory.create(
                     topic='test-topic',
-                    group_id='test-group'
+                    group_id='test-group',
+                    type='LOCAL'
                 )
                 
                 call_kwargs = MockKafkaConsumer.call_args[1]
@@ -106,7 +106,6 @@ class TestKafkaProducerFactory:
     def test_create_local_producer(self):
         """Test factory creates producer for LOCAL provider."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'localhost:9092'
         }):
@@ -121,7 +120,7 @@ class TestKafkaProducerFactory:
                 
                 from core.kafka.client import KafkaProducerFactory
                 
-                producer = KafkaProducerFactory.create()
+                producer = KafkaProducerFactory.create(type='LOCAL')
                 
                 assert producer == mock_producer
                 MockKafkaProducer.assert_called_once()
@@ -132,7 +131,6 @@ class TestKafkaProducerFactory:
     def test_create_azure_producer(self):
         """Test factory creates producer with SASL for AZURE provider."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'AZURE',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'mynamespace.servicebus.windows.net:9093',
             'KAFKA_SASL_USERNAME': '$ConnectionString',
@@ -149,7 +147,7 @@ class TestKafkaProducerFactory:
                 
                 from core.kafka.client import KafkaProducerFactory
                 
-                producer = KafkaProducerFactory.create()
+                producer = KafkaProducerFactory.create(type='AZURE')
                 
                 assert producer == mock_producer
                 call_kwargs = MockKafkaProducer.call_args[1]
@@ -160,7 +158,6 @@ class TestKafkaProducerFactory:
     def test_producer_value_serializer(self):
         """Test producer has correct value serializer."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'localhost:9092'
         }):
@@ -174,7 +171,7 @@ class TestKafkaProducerFactory:
                 
                 from core.kafka.client import KafkaProducerFactory
                 
-                KafkaProducerFactory.create()
+                KafkaProducerFactory.create(type='LOCAL')
                 
                 call_kwargs = MockKafkaProducer.call_args[1]
                 # Test the serializer function
@@ -190,7 +187,6 @@ class TestKafkaClientIntegration:
     def test_consumer_and_producer_same_broker(self):
         """Test consumer and producer use the same broker configuration."""
         with patch.dict(os.environ, {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL',
             'KAFKA_BROKER': 'shared-broker:9092'
         }):
@@ -207,8 +203,8 @@ class TestKafkaClientIntegration:
                 
                 from core.kafka.client import KafkaConsumerFactory, KafkaProducerFactory
                 
-                KafkaConsumerFactory.create(topic='test', group_id='group')
-                KafkaProducerFactory.create()
+                KafkaConsumerFactory.create(topic='test', group_id='group', type='LOCAL')
+                KafkaProducerFactory.create(type='LOCAL')
                 
                 consumer_broker = MockConsumer.call_args[1]['bootstrap_servers']
                 producer_broker = MockProducer.call_args[1]['bootstrap_servers']
@@ -219,7 +215,6 @@ class TestKafkaClientIntegration:
         """Test that missing KAFKA_BROKER raises error."""
         # Clear the KAFKA_BROKER env var
         env_without_broker = {
-            'KAFKA_PROVIDER': 'LOCAL',
             'SECRETS_PROVIDER': 'LOCAL'
         }
         

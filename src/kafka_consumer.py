@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "ocr-service")
+KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
 
 
 def process_message(message, producer):
@@ -111,9 +112,10 @@ def start_kafka_listener():
                 consumer = KafkaConsumerFactory.create(
                     topic=TOPIC_IN,
                     group_id=GROUP_ID,
+                    type=KAFKA_PROVIDER,
                     session_timeout_ms=30000,
                 )
-                producer = KafkaProducerFactory.create()
+                producer = KafkaProducerFactory.create(type=KAFKA_PROVIDER)
                 logger.info(f"Listening to topic '{TOPIC_IN}'...")
                 retry_delay = initial_delay  # Reset delay on successful connection
                 break

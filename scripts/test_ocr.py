@@ -22,6 +22,7 @@ from core.storage.client import StorageClientFactory
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
 STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "LOCAL")
+KAFKA_PROVIDER = os.getenv("KAFKA_PROVIDER", "LOCAL")
 
 
 def upload_test_image(bucket_name: str, file_path: str):
@@ -53,7 +54,7 @@ def send_ocr_request(bucket_name: str, file_name: str):
     """Send OCR request to Kafka."""
     print(f"\nSending OCR request to Kafka topic '{TOPIC_IN}'...")
 
-    producer = KafkaProducerFactory.create()
+    producer = KafkaProducerFactory.create(type=KAFKA_PROVIDER)
 
     message = {
         "sessionId": "test-session-123",
@@ -75,6 +76,7 @@ def listen_for_results(timeout_ms: int = 30000):
     consumer = KafkaConsumerFactory.create(
         topic=TOPIC_OUT,
         group_id='test-consumer',
+        type=KAFKA_PROVIDER,
         session_timeout_ms=timeout_ms
     )
 
