@@ -227,3 +227,4 @@ The build artifacts will be in the `dist/` directory.
 ```bash
 docker build -t remsfal/remsfal-ocr:dev -f docker/Dockerfile .
 ```
+
