@@ -15,25 +15,25 @@
 #
 # USAGE:
 #   chmod +x .github/workflows/deploy-to-acr.sh
-#   ./.github/workflows/deploy-to-acr.sh <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [--skip-tests]
+#   ./.github/workflows/deploy-to-acr.sh <ACR_NAME> [IMAGE_TAG] [--skip-tests]
 #
 # PREREQUISITES:
-#   - Azure CLI installed (az)
-#   - ACR username and password (from Azure Portal or az acr credential show)
+#   - Azure CLI installed and logged in (az login)
+#   - Python 3.11+ with pip
 #
 # EXAMPLES:
 #   # Deploy with tests
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" v1.0.0
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr v1.0.0
 #
 #   # Deploy with latest tag
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr latest
 #
 #   # Deploy without tests (faster for debugging)
-#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr rmsfldevweuacr "YOUR_PASSWORD" latest --skip-tests
+#   ./.github/workflows/deploy-to-acr.sh rmsfldevweuacr latest --skip-tests
 #
 # PULL AND RUN LOCALLY:
 #   # 1. Login to ACR
-#   docker login rmsfldevweuacr.azurecr.io -u rmsfldevweuacr -p "YOUR_PASSWORD"
+#   az acr login --name rmsfldevweuacr
 #
 #   # 2. Pull image
 #   docker pull rmsfldevweuacr.azurecr.io/remsfal-ocr:latest
@@ -57,8 +57,6 @@
 #
 # PARAMETERS:
 #   ACR_NAME      - Name of Azure Container Registry (e.g., rmsfldevweuacr)
-#   ACR_USERNAME  - ACR username (typically same as ACR_NAME)
-#   ACR_PASSWORD  - ACR password or access token
 #   IMAGE_TAG     - (Optional) Docker image tag (default: latest)
 #   --skip-tests  - (Optional) Skip running pytest before build
 #
@@ -112,27 +110,25 @@ for arg in "$@"; do
 done
 
 # Validate input parameters
-if [ ${#POSITIONAL_ARGS[@]} -lt 3 ]; then
+if [ ${#POSITIONAL_ARGS[@]} -lt 1 ]; then
     log_error "Missing required parameters"
     echo ""
-    echo "Usage: $0 <ACR_NAME> <ACR_USERNAME> <ACR_PASSWORD> [IMAGE_TAG] [--skip-tests]"
+    echo "Usage: $0 <ACR_NAME> [IMAGE_TAG] [--skip-tests]"
     echo ""
     echo "Prerequisites:"
-    echo "  - Azure CLI installed"
-    echo "  - ACR username and password/token"
+    echo "  - Azure CLI installed and logged in (az login)"
+    echo "  - Python 3.11+ with pip"
     echo ""
     echo "Examples:"
-    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" v1.0.0"
-    echo "  $0 rmsfldevweuacr rmsfldevweuacr \"YOUR_PASSWORD\" latest --skip-tests"
+    echo "  $0 rmsfldevweuacr v1.0.0"
+    echo "  $0 rmsfldevweuacr latest --skip-tests"
     echo ""
     echo "Flags:    --skip-tests  Skip running pytest before build"
     exit 1
 fi
 
 ACR_NAME="${POSITIONAL_ARGS[0]}"
-ACR_USERNAME="${POSITIONAL_ARGS[1]}"
-ACR_PASSWORD="${POSITIONAL_ARGS[2]}"
-IMAGE_TAG="${POSITIONAL_ARGS[3]:-latest}"
+IMAGE_TAG="${POSITIONAL_ARGS[1]:-latest}"
 
 # Configuration
 ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
@@ -201,22 +197,7 @@ fi
 
 log_success "Azure CLI found"
 
-# Login to ACR using provided credentials (docker login for image operations)
-log_info "Logging in to ACR: ${ACR_LOGIN_SERVER}..."
-
-docker login "${ACR_LOGIN_SERVER}" \
-    --username "${ACR_USERNAME}" \
-    --password "${ACR_PASSWORD}" &> /dev/null
-
-if [ $? -ne 0 ]; then
-    log_error "Failed to login to ACR. Please check your credentials."
-    log_info "Get ACR credentials with: az acr credential show --name ${ACR_NAME}"
-    exit 1
-fi
-
-log_success "Successfully logged in to ACR: ${ACR_LOGIN_SERVER}"
-
-log_success "All prerequisites are met (Python ${PYTHON_VERSION}, pip, Azure CLI, ACR login)"
+log_success "All prerequisites are met (Python ${PYTHON_VERSION}, pip, Azure CLI)"
 echo ""
 
 ###############################################################################
