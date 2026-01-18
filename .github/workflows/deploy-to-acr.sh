@@ -201,13 +201,12 @@ fi
 
 log_success "Azure CLI found"
 
-# Login to ACR using provided credentials
+# Login to ACR using provided credentials (docker login for image operations)
 log_info "Logging in to ACR: ${ACR_LOGIN_SERVER}..."
 
-echo "${ACR_PASSWORD}" | az acr login \
-    --name "${ACR_NAME}" \
+docker login "${ACR_LOGIN_SERVER}" \
     --username "${ACR_USERNAME}" \
-    --password-stdin &> /dev/null
+    --password "${ACR_PASSWORD}" &> /dev/null
 
 if [ $? -ne 0 ]; then
     log_error "Failed to login to ACR. Please check your credentials."
