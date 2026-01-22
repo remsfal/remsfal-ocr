@@ -24,6 +24,9 @@ classifiers = [
 ]
 
 dependencies = [
+    "azure-storage-blob>=12.27.1",
+    "azure-identity>=1.25.1",
+    "azure-keyvault-secrets>=4.10.0",
     "kafka-python==2.3.0",
     "minio==7.2.20",
     "paddleocr==2.10.0",
