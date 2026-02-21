@@ -30,7 +30,7 @@ dependencies = [
     "paddlepaddle==3.2.2",
     "pydantic==2.12.5",
     "python-dotenv==1.2.1",
-    "setuptools==80.10.2",
+    "setuptools==82.0.0",
 ]
 
 [project.optional-dependencies]
