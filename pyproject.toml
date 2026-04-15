@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "kafka-python==2.3.0",
+    "kafka-python==2.3.1",
     "minio==7.2.20",
     "paddleocr==2.10.0",
     "paddlepaddle==3.2.2",
