@@ -3,7 +3,7 @@
 Test script to send messages to Kafka and test OCR functionality.
 Prerequisites:
 - Docker services running (docker compose -f docker-compose.dev.yml up)
-- An image file uploaded to MinIO bucket 'documents'
+- An image file uploaded to the S3 bucket 'documents'
 """
 import json
 import os
@@ -18,19 +18,19 @@ load_dotenv()
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 TOPIC_IN = os.getenv("KAFKA_TOPIC_IN", "ocr.documents.to_process")
 TOPIC_OUT = os.getenv("KAFKA_TOPIC_OUT", "ocr.documents.processed")
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadminpassword")
+S3_ENDPOINT = os.getenv("S3_ENDPOINT", "localhost:4566")
+S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "minioadmin")
+S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", "minioadminpassword")
 
 
 def upload_test_image(bucket_name: str, file_path: str):
-    """Upload a test image to MinIO."""
-    print(f"Uploading {file_path} to MinIO bucket '{bucket_name}'...")
+    """Upload a test image to S3."""
+    print(f"Uploading {file_path} to S3 bucket '{bucket_name}'...")
 
     client = Minio(
-        MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
+        S3_ENDPOINT,
+        access_key=S3_ACCESS_KEY,
+        secret_key=S3_SECRET_KEY,
         secure=False
     )
 

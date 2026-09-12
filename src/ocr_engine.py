@@ -1,7 +1,7 @@
 """OCR text extraction engine using PaddleOCR.
 
 This module provides OCR (Optical Character Recognition) functionality
-for extracting text from images stored in S3/MinIO. It uses PaddleOCR
+for extracting text from images stored in S3. It uses PaddleOCR
 with German language support and automatic text orientation detection.
 """
 
@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import cv2
 from paddleocr import PaddleOCR
-from s3_client import get_object_from_minio
+from s3_client import get_object_from_s3
 import os
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ ocr = PaddleOCR(
 
 
 def extract_text_from_s3(bucket: str, object_name: str) -> str:
-    """Extract text from an image stored in S3/MinIO using OCR.
+    """Extract text from an image stored in S3 using OCR.
 
     Downloads an image from S3, decodes it, and performs OCR text extraction
     using PaddleOCR. The function handles various edge cases including
@@ -47,7 +47,7 @@ def extract_text_from_s3(bucket: str, object_name: str) -> str:
         "Invoice Number 12345 Date 2024-01-01"
     """
     logger.info(f"Processing {bucket}/{object_name}")
-    byte_data = get_object_from_minio(bucket, object_name)
+    byte_data = get_object_from_s3(bucket, object_name)
     np_array = np.frombuffer(byte_data, np.uint8)
     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 

@@ -1,13 +1,13 @@
 """
 Integration tests for OCR service using testcontainers.
-These tests start real Kafka and MinIO containers and test the complete flow.
+These tests start real Kafka and LocalStack (S3-compatible) containers and test the complete flow.
 """
 import json
 import pytest
 from io import BytesIO
 from pathlib import Path
 from testcontainers.kafka import KafkaContainer
-from testcontainers.minio import MinioContainer
+from testcontainers.localstack import LocalStackContainer
 from kafka import KafkaProducer, KafkaConsumer
 from minio import Minio
 
@@ -24,19 +24,20 @@ def kafka_container():
 
 
 @pytest.fixture(scope="module")
-def minio_container():
-    """Start a MinIO container for testing."""
-    with MinioContainer() as minio:
-        yield minio
+def localstack_container():
+    """Start a LocalStack (S3-compatible) container for testing."""
+    with LocalStackContainer(image="localstack/localstack:4.9").with_services("s3") as localstack:
+        yield localstack
 
 
 @pytest.fixture
-def minio_client(minio_container):
-    """Create MinIO client connected to test container."""
+def s3_client(localstack_container):
+    """Create an S3 client (minio SDK) connected to the LocalStack test container."""
+    endpoint = localstack_container.get_url().replace("http://", "")
     client = Minio(
-        minio_container.get_config()["endpoint"],
-        access_key=minio_container.access_key,
-        secret_key=minio_container.secret_key,
+        endpoint,
+        access_key="testcontainers-localstack",
+        secret_key="testcontainers-localstack",
         secure=False
     )
 
@@ -87,22 +88,19 @@ def test_kafka_container_starts(kafka_container):
     assert kafka_container.get_bootstrap_server() is not None
 
 
-def test_minio_container_starts(minio_container):
-    """Test that MinIO container starts successfully."""
-    config = minio_container.get_config()
-    assert config["endpoint"] is not None
-    assert config["access_key"] is not None
-    assert config["secret_key"] is not None
+def test_localstack_container_starts(localstack_container):
+    """Test that the LocalStack container starts successfully."""
+    assert localstack_container.get_url() is not None
 
 
-def test_upload_image_to_minio(minio_client):
-    """Test uploading an image to MinIO."""
-    client, bucket_name = minio_client
+def test_upload_image_to_s3(s3_client):
+    """Test uploading an image to S3."""
+    client, bucket_name = s3_client
 
     # Load test image
     image_data = load_test_image()
 
-    # Upload to MinIO
+    # Upload to S3
     client.put_object(
         bucket_name,
         "test-image.png",
@@ -131,12 +129,11 @@ def test_kafka_message_flow(kafka_producer, kafka_consumer):
 
     # Note: In a real integration test, the OCR service would process this
     # For now, we just verify Kafka messaging works
-    # You would need to start the OCR service in the test for full E2E testing
 
 
-def test_minio_and_kafka_integration(minio_client, kafka_producer):
-    """Test that MinIO and Kafka work together."""
-    client, bucket_name = minio_client
+def test_s3_and_kafka_integration(s3_client, kafka_producer):
+    """Test that S3 and Kafka work together."""
+    client, bucket_name = s3_client
 
     # Upload test image
     image_data = load_test_image()
@@ -161,7 +158,7 @@ def test_minio_and_kafka_integration(minio_client, kafka_producer):
     kafka_producer.send('ocr.documents.to_process', message)
     kafka_producer.flush()
 
-    # Verify file exists in MinIO
+    # Verify file exists in S3
     stat = client.stat_object(bucket_name, file_name)
     assert stat.size == len(image_data)
 
@@ -173,12 +170,12 @@ def test_minio_and_kafka_integration(minio_client, kafka_producer):
 # 3. Verify the extracted text
 #
 # Example:
-# def test_ocr_end_to_end(kafka_container, minio_container):
+# def test_ocr_end_to_end(kafka_container, localstack_container):
 #     # Set environment variables for OCR service
 #     os.environ['KAFKA_BROKER'] = kafka_container.get_bootstrap_server()
-#     os.environ['MINIO_ENDPOINT'] = minio_container.get_config()['endpoint']
-#     os.environ['MINIO_ACCESS_KEY'] = minio_container.access_key
-#     os.environ['MINIO_SECRET_KEY'] = minio_container.secret_key
+#     os.environ['S3_ENDPOINT'] = localstack_container.get_url().replace("http://", "")
+#     os.environ['S3_ACCESS_KEY'] = "testcontainers-localstack"
+#     os.environ['S3_SECRET_KEY'] = "testcontainers-localstack"
 #
 #     # Start OCR service in background
 #     # ... (implementation depends on your setup)

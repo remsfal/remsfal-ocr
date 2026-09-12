@@ -35,7 +35,7 @@ class TestOCREngine:
         ]
         
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object, \
+             patch('ocr_engine.get_object_from_s3') as mock_get_object, \
              patch('ocr_engine.ocr') as mock_ocr:
             
             from ocr_engine import extract_text_from_s3
@@ -55,7 +55,7 @@ class TestOCREngine:
         invalid_image_bytes = b'invalid image data'
         
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object:
+             patch('ocr_engine.get_object_from_s3') as mock_get_object:
             
             from ocr_engine import extract_text_from_s3
             
@@ -76,7 +76,7 @@ class TestOCREngine:
         test_image_bytes = img_encoded.tobytes()
         
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object, \
+             patch('ocr_engine.get_object_from_s3') as mock_get_object, \
              patch('ocr_engine.ocr') as mock_ocr:
             
             from ocr_engine import extract_text_from_s3
@@ -99,7 +99,7 @@ class TestOCREngine:
         test_image_bytes = img_encoded.tobytes()
         
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object, \
+             patch('ocr_engine.get_object_from_s3') as mock_get_object, \
              patch('ocr_engine.ocr') as mock_ocr:
             
             from ocr_engine import extract_text_from_s3
@@ -126,7 +126,7 @@ class TestOCREngine:
         ]
         
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object, \
+             patch('ocr_engine.get_object_from_s3') as mock_get_object, \
              patch('ocr_engine.ocr') as mock_ocr:
             
             from ocr_engine import extract_text_from_s3
@@ -141,7 +141,7 @@ class TestOCREngine:
     def test_extract_text_from_s3_s3_error(self):
         """Test handling of S3 errors."""
         with patch.dict('sys.modules', {'paddleocr': Mock()}), \
-             patch('ocr_engine.get_object_from_minio') as mock_get_object:
+             patch('ocr_engine.get_object_from_s3') as mock_get_object:
             
             from ocr_engine import extract_text_from_s3
             

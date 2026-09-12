@@ -12,7 +12,7 @@ It listens for document processing requests sent by the chat service via Kafka, 
 By default:
 
 - Kafka is expected to be available at `localhost:9092`
-- MinIO is expected to be available at `localhost:9000`
+- S3 (LocalStack) is expected to be available at `localhost:4566`
 
 ## Setup
 
@@ -55,9 +55,9 @@ The following environment variables can be used to override the default values:
 - `KAFKA_TOPIC_IN` = `ocr.documents.to_process`
 - `KAFKA_TOPIC_OUT` = `ocr.documents.processed`
 - `GROUP_ID` = `ocr-service`
-- `MINIO_ENDPOINT` = `localhost:9000`
-- `MINIO_ACCESS_KEY` = `minioadmin`
-- `MINIO_SECRET_KEY` = `minioadminpassword`
+- `S3_ENDPOINT` = `localhost:4566`
+- `S3_ACCESS_KEY` = `minioadmin`
+- `S3_SECRET_KEY` = `minioadminpassword`
 
 Copy the example environment file:
 
@@ -67,10 +67,10 @@ cp .env.example .env
 
 ### Local Development
 
-For local development and testing, you need Kafka and MinIO running. Use the provided Docker Compose configuration:
+For local development and testing, you need Kafka and LocalStack (S3) running. Use the provided Docker Compose configuration:
 
 ```bash
-# Start Kafka, MinIO, and Kafka UI
+# Start Kafka, LocalStack (S3), and Kafka UI
 docker compose up -d
 
 # Check if services are running
@@ -86,8 +86,8 @@ docker compose down
 Services will be available at:
 - **Kafka**: localhost:9092
 - **Kafka UI**: http://localhost:8090 (for monitoring topics and messages)
-- **MinIO API**: localhost:9000
-- **MinIO Console**: http://localhost:9001 (login: minioadmin/minioadminpassword)
+- **S3 (LocalStack)**: localhost:4566 — inspect buckets with
+  `docker compose exec localstack awslocal s3 ls s3://documents`
 
 ### Run
 
@@ -111,7 +111,7 @@ hatch run python scripts/test_ocr.py test/resources/test-image.png
 ```
 
 This script will:
-1. Upload the image to MinIO bucket 'documents'
+1. Upload the image to the S3 bucket 'documents'
 2. Send an OCR request message to Kafka topic 'ocr.documents.to_process'
 3. Listen for the result on topic 'ocr.documents.processed'
 4. Print the extracted text
@@ -146,7 +146,7 @@ This will generate:
 
 ### Integration Tests
 
-Integration tests use **testcontainers-python** to start real Kafka and MinIO containers, similar to Quarkus with Testcontainers. All tests (unit and integration) are in the `test/` directory and run together.
+Integration tests use **testcontainers-python** to start real Kafka and LocalStack (S3) containers, similar to Quarkus with Testcontainers. All tests (unit and integration) are in the `test/` directory and run together.
 
 #### Prerequisites
 
@@ -167,7 +167,7 @@ hatch run test test/test_ocr_integration.py::test_kafka_container_starts
 ```
 
 The integration tests will:
-- Automatically start Kafka and MinIO containers
+- Automatically start Kafka and LocalStack (S3) containers
 - Run tests against real services
 - Clean up containers after tests complete
 - Generate a combined coverage report with unit tests
@@ -181,10 +181,10 @@ The integration tests will:
 
 **Integration Tests:**
 - Kafka container lifecycle
-- MinIO container lifecycle
+- LocalStack container lifecycle
 - Kafka message producer/consumer flow
-- MinIO file upload/download
-- Integration between Kafka and MinIO
+- S3 file upload/download
+- Integration between Kafka and S3
 
 For full end-to-end tests with the OCR service running, see comments in `test/test_ocr_integration.py`.
 
