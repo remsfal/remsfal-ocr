@@ -35,7 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "pytest==9.1.1",
+    "pytest==9.2.0",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
     "testcontainers[kafka,localstack]>=4.0.0",
@@ -44,7 +44,7 @@ lint = [
     "flake8>=7.0.0",
 ]
 dev = [
-    "pytest==9.1.1",
+    "pytest==9.2.0",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
     "testcontainers[kafka,localstack]>=4.0.0",
